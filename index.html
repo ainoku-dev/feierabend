@@ -28,9 +28,9 @@
     }
     input, button {
       width: 100%;
-      padding: 0.38rem;
+      padding: 0.76rem;
       margin-top: 0.25rem;
-      font-size: 0.9rem;
+      font-size: 1rem;
       border-radius: 6px;
       border: 1px solid #334155;
       background: #1e293b;
@@ -79,7 +79,7 @@
       color: #f1f5f9;
     }
     .scenario-sub {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: #e5e7eb;
       margin-top: 0.1rem;
     }
@@ -106,6 +106,8 @@
     .scenario-time-box {
       border-bottom: 1px solid #334155;
       border-top: none !important;
+      background: #020617;
+      font-size: 1.0rem;
     }
     .scenario-glz-box {
       border-top: 1px solid #111827;
@@ -117,7 +119,9 @@
       display: flex;
       flex-wrap: wrap;
       gap: 0.25rem;
-      margin-top: 0.3rem;
+      margin-top: 0.4rem;
+      padding-top: 0.35rem;
+      border-top: 1px solid #1f2937;
     }
     .chip {
       font-size: 0.72rem;
@@ -162,35 +166,109 @@
       color: #e5e7eb;
     }
 
-    .top-bar {
+    .start-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-top: 0.4rem;
+    }
+    .start-group {
+      flex: 1;
+    }
+    .mode-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: flex-start;
+      width: 84px;
+    }
+    .mode-group > label {
+      margin-top: 0.4rem;
+      margin-bottom: 0.25rem;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+    }
+
+    .theme-toggle {
+      position: relative;
+      width: 84px;
+      height: 64%;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: #020617;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 0.5rem;
-      margin-bottom: 0.6rem;
-    }
-    .theme-toggle {
-      width: 2rem;
-      height: 2rem;
-      border-radius: 999px;
-      border: 1px solid #334155;
-      background: #020617;
-      color: #e2e8f0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
+      padding: 0 8px;
       cursor: pointer;
-      padding: 0;
+      overflow: hidden;
+      margin-top: 0.25rem;
     }
     .theme-toggle:hover {
       background: #1e293b;
+    }
+    .theme-toggle::before {
+      content: "";
+      position: absolute;
+      top: 4px;
+      left: calc(50% + 4px); /* Dark mode: moon active */
+      width: calc(50% - 6px);
+      height: calc(100% - 8px);
+      border-radius: 4px;
+      background: #e5e7eb; /* heller Block unter Mond im Dark Mode */
+      transition: left 0.2s ease, background 0.2s ease;
+      z-index: 0;
+    }
+    .theme-icon {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0;
+    }
+    .theme-icon-sun {
+      position: relative;
+      left: 4px; /* moved 2px more right */ /* slightly to the right */
+      color: #64748b;
+      z-index: 1;
+    }
+    .theme-icon-moon {
+      position: relative;
+      right: 4px;
+      color: #000000;
+      z-index: 1;
     }
 
     .input-row {
       display: flex;
       gap: 0.7rem;
       margin-top: 0.8rem;
+    }
+
+    .start-row {
+      display: flex;
+      align-items: stretch;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-top: 0.4rem;
+    }
+    .start-group {
+      flex: 1;
+    }
+
+
+
+    body.theme-light .theme-toggle::before {
+      left: 4px; /* Light mode: sun active */
+      background: #020617; /* dunkler Block unter Sonne im Light Mode */
+    }
+    body.theme-light .theme-icon-sun {
+      color: #ffffff;
+    }
+    body.theme-light .theme-icon-moon {
+      color: #4b5563;
     }
 
     /* Light-Mode Overrides */
@@ -219,8 +297,10 @@
     }
     body.theme-light .theme-toggle {
       background: #e5e7eb;
-      color: #020617;
       border-color: #94a3b8;
+    }
+    body.theme-light .theme-toggle:hover {
+      background: #cbd5e1;
     }
     body.theme-light .theme-toggle:hover {
       background: #d4d4d8;
@@ -242,8 +322,12 @@
     body.theme-light .scenario-time-box {
       border-bottom-color: #d1d5db;
       border-top: none !important;
+      background: #f3f4f6;
     }
     body.theme-light .scenario-glz-box {
+      border-top-color: #e5e7eb;
+    }
+    body.theme-light .chip-row {
       border-top-color: #e5e7eb;
     }
     body.theme-light .chip {
@@ -286,19 +370,27 @@
   </style>
 </head>
 <body>
-  <div class="top-bar">
-    <h1>Wann Feierabend?</h1>
-    <button id="themeToggle" class="theme-toggle" type="button" aria-label="Darstellung umschalten">
-      <svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-        <path d="M21 12.79A9 9 0 0111.21 3 7 7 0 0012 17a7 7 0 009-4.21z"/>
-      </svg>
-    </button>
+  <div class="start-row">
+    <div class="start-group">
+      <label for="startTime">Startzeit</label>
+      <input type="time" id="startTime" value="07:00">
+    </div>
+    <div class="mode-group">
+      <label for="themeToggle">Mode</label>
+      <button id="themeToggle" class="theme-toggle" type="button" aria-label="Darstellung umschalten">
+        <span class="theme-icon theme-icon-sun">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 18a6 6 0 100-12 6 6 0 000 12zm0-16a1 1 0 011 1v2a1 1 0 11-2 0V3a1 1 0 011-1zm0 16a1 1 0 011 1v2a1 1 0 11-2 0v-2a1 1 0 011-1zm10-7a1 1 0 01-1 1h-2a1 1 0 110-2h2a1 1 0 011 1zM6 12a1 1 0 01-1 1H3a1 1 0 110-2h2a1 1 0 011 1zm11.657 7.071a1 1 0 010-1.414l1.414-1.414a1 1 0 011.414 1.414L19.071 19.07a1 1 0 01-1.414 0zM4.929 6.343A1 1 0 016.343 4.93L7.757 6.34A1 1 0 016.343 7.76L4.929 6.343z"/>
+          </svg>
+        </span>
+        <span class="theme-icon theme-icon-moon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 12.79A9 9 0 0111.21 3 7 7 0 0012 17a7 7 0 009-4.21z"/>
+          </svg>
+        </span>
+      </button>
+    </div>
   </div>
-
-  <label>
-    Startzeit
-    <input type="time" id="startTime" value="07:00">
-  </label>
 
   <div class="input-row">
     <div class="input-group">
@@ -311,7 +403,7 @@
     </div>
   </div>
 
-  <button id="calcBtn">Berechnen</button>
+  <button id="calcBtn">Wann Feierabend?</button>
 
   <div id="results"></div>
 
@@ -391,10 +483,7 @@
     }
 
     function updateToggleIcon(theme) {
-      if (!themeToggle) return;
-      const moonSVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 0111.21 3 7 7 0 0012 17a7 7 0 009-4.21z"/></svg>`;
-      const sunSVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg"><path d="M12 18a6 6 0 100-12 6 6 0 000 12zm0-16a1 1 0 011 1v2a1 1 0 11-2 0V3a1 1 0 011-1zm0 16a1 1 0 011 1v2a1 1 0 11-2 0v-2a1 1 0 011-1zm10-7a1 1 0 01-1 1h-2a1 1 0 110-2h2a1 1 0 011 1zM6 12a1 1 0 01-1 1H3a1 1 0 110-2h2a1 1 0 011 1zm11.657 7.071a1 1 0 010-1.414l1.414-1.414a1 1 0 011.414 1.414L19.071 19.07a1 1 0 01-1.414 0zM4.929 6.343A1 1 0 016.343 4.93L7.757 6.34A1 1 0 016.343 7.76L4.929 6.343zm14.142 0L19.07 7.76A1 1 0 1117.657 6.34l1.414-1.41a1 1 0 011.414 1.414zM4.93 17.657l1.414-1.414a1 1 0 011.414 1.414L6.343 19.07a1 1 0 01-1.414-1.414z"/></svg>`;
-      themeToggle.innerHTML = theme === "light" ? sunSVG : moonSVG;
+      // Icons werden über CSS (Sun/Moon-Switch) gesteuert – hier keine DOM-Änderung nötig.
     }
 
     function applyTheme(theme) {
@@ -473,8 +562,8 @@
         const glzTextDesired = formatOt(otDesired) + " GLZ";
 
         const titleDesired = approxEqual(otDesired, 0)
-          ? "GLZ auf 0 bringen (Ziel)"
-          : "Auf gewünschtes GLZ kommen";
+        ? "Auf Wunsch-GLZ"
+        : "Auf gewünschtes GLZ kommen";
 
         html += createScenario(
           titleDesired,
@@ -571,7 +660,7 @@
         const presenceZero = workedZero + breakZero;
         const endZero = addHoursToTime(startStr, presenceZero);
 
-        let titleZero = "GLZ auf 0 bringen";
+        let titleZero = "GLZ auf 0";
         if (workedZero > TARGET_NET) {
           titleZero += " (über 8h netto)";
         } else if (workedZero > SIX_HOURS && workedZero <= TARGET_NET) {
