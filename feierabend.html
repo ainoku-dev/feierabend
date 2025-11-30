@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wann Feierabend?</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      padding: 0.9rem;
+      max-width: 400px;
+      margin: 0 auto;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    h1 {
+      font-size: 1.25rem;
+      margin-bottom: 0.2rem;
+      text-align: center;
+      color: #f1f5f9;
+    }
+    label {
+      display: block;
+      margin-top: 0.4rem;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+    }
+    input, button {
+      width: 100%;
+      padding: 0.38rem;
+      margin-top: 0.25rem;
+      font-size: 0.9rem;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #e2e8f0;
+      font-family: inherit;
+    }
+    input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px #3b82f655;
+    }
+    button {
+      margin-top: 0.8rem;
+      border: none;
+      background: #3b82f6;
+      color: #fff;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    button:hover { background: #2563eb; }
+
+    #results { margin-top: 0.8rem; }
+
+    .scenario {
+      margin-top: 0.55rem;
+      padding: 0;
+      border-radius: 12px;
+      border: 1px solid #334155;
+      background: #0b1120;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.35);
+      display: grid;
+      grid-template-columns: 2.3fr 1.1fr;
+      gap: 0;
+      align-items: stretch;
+    }
+    .scenario-main {
+      padding: 0.55rem 0.65rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.15rem;
+    }
+    .scenario-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #f1f5f9;
+    }
+    .scenario-sub {
+      font-size: 0.8rem;
+      color: #e5e7eb;
+      margin-top: 0.1rem;
+    }
+
+    .scenario-side {
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid #334155;
+      padding: 0;
+    }
+    .scenario-time-box,
+    .scenario-glz-box {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.35rem 0.45rem;
+      text-align: center;
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+      border-top: none;
+    }
+    .scenario-time-box {
+      border-bottom: 1px solid #334155;
+      border-top: none !important;
+    }
+    .scenario-glz-box {
+      border-top: 1px solid #111827;
+      border-bottom-left-radius: 0px;
+      border-bottom-right-radius: 6px;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      margin-top: 0.3rem;
+    }
+    .chip {
+      font-size: 0.72rem;
+      padding: 0.12rem 0.5rem;
+      border-radius: 999px;
+      background: #111827;
+      color: #e5e7eb;
+      border: 1px solid #1f2937;
+      white-space: nowrap;
+    }
+    .chip-danger {
+      background: #7f1d1d;
+      color: #fecaca;
+      border-color: #b91c1c;
+    }
+    .chip-info {
+      background: #1e3a8a;
+      color: #bfdbfe;
+      border-color: #1d4ed8;
+    }
+    .chip-warning {
+      background: #7c2d12;
+      color: #fed7aa;
+      border-color: #ea580c;
+    }
+    .chip-success {
+      background: #14532d;
+      color: #bbf7d0;
+      border-color: #16a34a;
+    }
+
+    .glz-up {
+      background: #14532d;
+      color: #bbf7d0;
+    }
+    .glz-down {
+      background: #7f1d1d;
+      color: #fecaca;
+    }
+    .glz-neutral {
+      background: #111827;
+      color: #e5e7eb;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.6rem;
+    }
+    .theme-toggle {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 999px;
+      border: 1px solid #334155;
+      background: #020617;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 0;
+    }
+    .theme-toggle:hover {
+      background: #1e293b;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.7rem;
+      margin-top: 0.8rem;
+    }
+
+    /* Light-Mode Overrides */
+    body.theme-light {
+      background: #e5e7eb;
+      color: #020617;
+    }
+    body.theme-light h1 {
+      color: #0f172a;
+    }
+    body.theme-light label {
+      color: #0f172a;
+    }
+    body.theme-light input,
+    body.theme-light button {
+      background: #ffffff;
+      color: #020617;
+      border-color: #cbd5e1;
+    }
+    body.theme-light button {
+      background: #2563eb;
+      color: #ffffff;
+    }
+    body.theme-light button:hover {
+      background: #1d4ed8;
+    }
+    body.theme-light .theme-toggle {
+      background: #e5e7eb;
+      color: #020617;
+      border-color: #94a3b8;
+    }
+    body.theme-light .theme-toggle:hover {
+      background: #d4d4d8;
+    }
+    body.theme-light .scenario {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      box-shadow: 0 2px 4px rgba(148,163,184,0.35);
+    }
+    body.theme-light .scenario-title {
+      color: #0f172a;
+    }
+    body.theme-light .scenario-sub {
+      color: #111827;
+    }
+    body.theme-light .scenario-side {
+      border-left-color: #d1d5db;
+    }
+    body.theme-light .scenario-time-box {
+      border-bottom-color: #d1d5db;
+      border-top: none !important;
+    }
+    body.theme-light .scenario-glz-box {
+      border-top-color: #e5e7eb;
+    }
+    body.theme-light .chip {
+      background: #e5e7eb;
+      color: #111827;
+      border-color: #cbd5e1;
+    }
+    body.theme-light .chip-info {
+      background: #dbeafe;
+      color: #1d4ed8;
+      border-color: #93c5fd;
+    }
+    body.theme-light .chip-danger {
+      background: #fee2e2;
+      color: #b91c1c;
+      border-color: #fecaca;
+    }
+    body.theme-light .chip-warning {
+      background: #ffedd5;
+      color: #c2410c;
+      border-color: #fed7aa;
+    }
+    body.theme-light .chip-success {
+      background: #dcfce7;
+      color: #166534;
+      border-color: #bbf7d0;
+    }
+    body.theme-light .glz-up {
+      background: #dcfce7;
+      color: #166534;
+    }
+    body.theme-light .glz-down {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    body.theme-light .glz-neutral {
+      background: #e5e7eb;
+      color: #111827;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <h1>Wann Feierabend?</h1>
+    <button id="themeToggle" class="theme-toggle" type="button" aria-label="Darstellung umschalten">
+      <svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21 12.79A9 9 0 0111.21 3 7 7 0 0012 17a7 7 0 009-4.21z"/>
+      </svg>
+    </button>
+  </div>
+
+  <label>
+    Startzeit
+    <input type="time" id="startTime" value="07:00">
+  </label>
+
+  <div class="input-row">
+    <div class="input-group">
+      <label for="otStart">GLZ-Konto (h)</label>
+      <input type="number" id="otStart" step="0.25" value="0">
+    </div>
+    <div class="input-group">
+      <label for="otDesired">Wunsch-GLZ (h)</label>
+      <input type="number" id="otDesired" step="0.25" value="0">
+    </div>
+  </div>
+
+  <button id="calcBtn">Berechnen</button>
+
+  <div id="results"></div>
+
+  <script>
+    const TARGET_NET = 8;
+    const SIX_HOURS = 6;
+
+    const startTimeInput = document.getElementById("startTime");
+    const otStartInput = document.getElementById("otStart");
+    const otDesiredInput = document.getElementById("otDesired");
+    const resultsDiv = document.getElementById("results");
+    const calcBtn = document.getElementById("calcBtn");
+    const themeToggle = document.getElementById("themeToggle");
+
+    function formatHours(h) {
+      return h.toFixed(2).replace(".", ",") + " h";
+    }
+
+    function hoursToHM(h) {
+      const totalMinutes = Math.round(h * 60);
+      const hrs = Math.floor(totalMinutes / 60);
+      const mins = totalMinutes % 60;
+      const hh = String(hrs).padStart(2, "0");
+      const mm = String(mins).padStart(2, "0");
+      return hh + ":" + mm;
+    }
+
+    function formatOt(h) {
+      return formatHours(h);
+    }
+
+    function approxEqual(a, b, eps = 0.001) {
+      return Math.abs(a - b) < eps;
+    }
+
+    function getRequiredBreak(workingHours) {
+      if (workingHours > 9) return 0.75;
+      if (workingHours > 6) return 0.5;
+      return 0;
+    }
+
+    function addHoursToTime(startStr, hours) {
+      const parts = startStr.split(":");
+      const h = parseInt(parts[0], 10);
+      const m = parseInt(parts[1] || "0", 10);
+      const date = new Date();
+      date.setHours(h, m, 0, 0);
+      date.setTime(date.getTime() + hours * 60 * 60 * 1000);
+      return date.toTimeString().slice(0, 5);
+    }
+
+    function createScenario(title, timeText, workText, glzText, glzClass, chips) {
+      let html = '<div class="scenario">';
+      html += '<div class="scenario-main">';
+      html += '<div class="scenario-title">' + title + '</div>';
+      if (workText) {
+        html += '<div class="scenario-sub">' + workText + '</div>';
+      }
+      if (chips && chips.length) {
+        html += '<div class="chip-row">';
+        for (let i = 0; i < chips.length; i++) {
+          const chip = chips[i];
+          const cls = 'chip' + (chip.variant ? ' chip-' + chip.variant : '');
+          html += '<span class="' + cls + '">' + chip.text + '</span>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+
+      html += '<div class="scenario-side">';
+      html += '<div class="scenario-time-box">' + (timeText || '') + '</div>';
+      html += '<div class="scenario-glz-box ' + (glzClass || 'glz-neutral') + '">' + (glzText || '') + '</div>';
+      html += '</div>';
+
+      html += '</div>';
+      return html;
+    }
+
+    function updateToggleIcon(theme) {
+      if (!themeToggle) return;
+      const moonSVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 0111.21 3 7 7 0 0012 17a7 7 0 009-4.21z"/></svg>`;
+      const sunSVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg"><path d="M12 18a6 6 0 100-12 6 6 0 000 12zm0-16a1 1 0 011 1v2a1 1 0 11-2 0V3a1 1 0 011-1zm0 16a1 1 0 011 1v2a1 1 0 11-2 0v-2a1 1 0 011-1zm10-7a1 1 0 01-1 1h-2a1 1 0 110-2h2a1 1 0 011 1zM6 12a1 1 0 01-1 1H3a1 1 0 110-2h2a1 1 0 011 1zm11.657 7.071a1 1 0 010-1.414l1.414-1.414a1 1 0 011.414 1.414L19.071 19.07a1 1 0 01-1.414 0zM4.929 6.343A1 1 0 016.343 4.93L7.757 6.34A1 1 0 016.343 7.76L4.929 6.343zm14.142 0L19.07 7.76A1 1 0 1117.657 6.34l1.414-1.41a1 1 0 011.414 1.414zM4.93 17.657l1.414-1.414a1 1 0 011.414 1.414L6.343 19.07a1 1 0 01-1.414-1.414z"/></svg>`;
+      themeToggle.innerHTML = theme === "light" ? sunSVG : moonSVG;
+    }
+
+    function applyTheme(theme) {
+      const body = document.body;
+      body.classList.remove("theme-light");
+      if (theme === "light") {
+        body.classList.add("theme-light");
+      }
+      localStorage.setItem("feierabendTheme", theme);
+      updateToggleIcon(theme);
+    }
+
+    (function initTheme() {
+      const saved = localStorage.getItem("feierabendTheme");
+      const initial = saved === "light" || saved === "dark" ? saved : "dark";
+      applyTheme(initial);
+    })();
+
+    if (themeToggle) {
+      themeToggle.addEventListener("click", function () {
+        const current = localStorage.getItem("feierabendTheme") || "dark";
+        const next = current === "dark" ? "light" : "dark";
+        applyTheme(next);
+      });
+    }
+
+    calcBtn.addEventListener("click", function () {
+      const startStr = startTimeInput.value;
+      const otStart = parseFloat(otStartInput.value || "0");
+      const otDesired = parseFloat(otDesiredInput.value || "0");
+
+      if (!startStr) {
+        resultsDiv.textContent = "Bitte Startzeit eingeben.";
+        return;
+      }
+
+      let html = "";
+
+      // 1) Auf gewünschtes GLZ kommen
+      const workedDesired = otDesired - otStart + TARGET_NET;
+      if (workedDesired > 0 && workedDesired <= 12) {
+        const breakDesired = getRequiredBreak(workedDesired);
+        const presenceDesired = workedDesired + breakDesired;
+        const endDesired = addHoursToTime(startStr, presenceDesired);
+
+        const chipsDesired = [];
+        if (breakDesired === 0 && workedDesired <= SIX_HOURS) {
+          chipsDesired.push({ text: "Keine Pause", variant: "success" });
+        } else if (breakDesired === 0.5) {
+          chipsDesired.push({ text: "30 Min Pflichtpause", variant: "info" });
+        } else if (breakDesired === 0.75) {
+          chipsDesired.push({ text: "45 Min Pflichtpause", variant: "warning" });
+        }
+        if (approxEqual(otDesired, 0)) {
+          chipsDesired.push({ text: "GLZ = 0", variant: "" });
+        } else if (otDesired < 0) {
+          chipsDesired.push({ text: "GLZ im Minus", variant: "danger" });
+        } else if (otDesired > otStart) {
+          chipsDesired.push({ text: "GLZ steigt", variant: "success" });
+        } else if (otDesired < otStart) {
+          chipsDesired.push({ text: "GLZ sinkt", variant: "warning" });
+        } else {
+          chipsDesired.push({ text: "GLZ unverändert", variant: "" });
+        }
+
+        let glzClassDesired = "glz-neutral";
+        if (approxEqual(otDesired, otStart)) {
+          glzClassDesired = "glz-neutral";
+        } else if (otDesired > otStart) {
+          glzClassDesired = "glz-up";
+        } else if (otDesired < otStart) {
+          glzClassDesired = "glz-down";
+        }
+
+        const workTextDesired = hoursToHM(workedDesired) + "h Arbeit · " + hoursToHM(breakDesired) + "h Pause";
+        const glzTextDesired = formatOt(otDesired) + " GLZ";
+
+        const titleDesired = approxEqual(otDesired, 0)
+          ? "GLZ auf 0 bringen (Ziel)"
+          : "Auf gewünschtes GLZ kommen";
+
+        html += createScenario(
+          titleDesired,
+          endDesired + " Uhr",
+          workTextDesired,
+          glzTextDesired,
+          glzClassDesired,
+          chipsDesired
+        );
+      } else {
+        html += createScenario(
+          "Auf gewünschtes GLZ kommen",
+          "",
+          "",
+          "",
+          "glz-neutral",
+          []
+        );
+      }
+
+      // 2) Normaler Arbeitstag
+      const worked8 = TARGET_NET;
+      const break8 = getRequiredBreak(worked8);
+      const presence8 = worked8 + break8;
+      const end8 = addHoursToTime(startStr, presence8);
+      const otAfter8 = otStart;
+
+      const chips8 = [];
+      if (break8 === 0.5) {
+        chips8.push({ text: "30 Min Pflichtpause", variant: "info" });
+      } else if (break8 === 0.75) {
+        chips8.push({ text: "45 Min Pflichtpause", variant: "warning" });
+      }
+      chips8.push({ text: "GLZ unverändert", variant: "" });
+
+      const workText8 = hoursToHM(worked8) + "h Arbeit · " + hoursToHM(break8) + "h Pause";
+      const glzText8 = formatOt(otAfter8) + " GLZ";
+
+      html += createScenario(
+        "Normaler Arbeitstag",
+        end8 + " Uhr",
+        workText8,
+        glzText8,
+        "glz-neutral",
+        chips8
+      );
+
+      // 3) Ohne Pause
+      const worked6 = SIX_HOURS;
+      const break6 = getRequiredBreak(worked6);
+      const presence6 = worked6 + break6;
+      const end6 = addHoursToTime(startStr, presence6);
+      const otAfter6 = otStart + (worked6 - TARGET_NET);
+
+      const chips6 = [];
+      chips6.push({ text: "Keine Pause", variant: "success" });
+      if (approxEqual(otAfter6, 0)) {
+        chips6.push({ text: "GLZ = 0", variant: "" });
+      } else if (otAfter6 < 0) {
+        chips6.push({ text: "GLZ im Minus", variant: "danger" });
+      } else if (otAfter6 > otStart) {
+        chips6.push({ text: "GLZ steigt", variant: "success" });
+      } else if (otAfter6 < otStart) {
+        chips6.push({ text: "GLZ sinkt", variant: "warning" });
+      } else {
+        chips6.push({ text: "GLZ unverändert", variant: "" });
+      }
+
+      let glzClass6 = "glz-neutral";
+      if (approxEqual(otAfter6, otStart)) {
+        glzClass6 = "glz-neutral";
+      } else if (otAfter6 > otStart) {
+        glzClass6 = "glz-up";
+      } else if (otAfter6 < otStart) {
+        glzClass6 = "glz-down";
+      }
+
+      const workText6 = hoursToHM(worked6) + "h Arbeit · " + hoursToHM(break6) + "h Pause";
+      const glzText6 = formatOt(otAfter6) + " GLZ";
+
+      html += createScenario(
+        "Ohne Pause",
+        end6 + " Uhr",
+        workText6,
+        glzText6,
+        glzClass6,
+        chips6
+      );
+
+      // 4) GLZ auf 0 bringen (separat) nur, wenn Ziel nicht 0 ist
+      if (!approxEqual(otDesired, 0) && Math.abs(otStart) < 2) {
+        const workedZero = TARGET_NET - otStart;
+        const breakZero = getRequiredBreak(workedZero);
+        const presenceZero = workedZero + breakZero;
+        const endZero = addHoursToTime(startStr, presenceZero);
+
+        let titleZero = "GLZ auf 0 bringen";
+        if (workedZero > TARGET_NET) {
+          titleZero += " (über 8h netto)";
+        } else if (workedZero > SIX_HOURS && workedZero <= TARGET_NET) {
+          titleZero += "";
+        } else if (workedZero < SIX_HOURS) {
+          titleZero += " (unter 6h netto)";
+        }
+
+        const chipsZero = [];
+        if (breakZero === 0 && workedZero <= SIX_HOURS) {
+          chipsZero.push({ text: "Keine Pause", variant: "success" });
+        } else if (breakZero === 0.5) {
+          chipsZero.push({ text: "30 Min Pflichtpause", variant: "info" });
+        } else if (breakZero === 0.75) {
+          chipsZero.push({ text: "45 Min Pflichtpause", variant: "warning" });
+        }
+        chipsZero.push({ text: "GLZ = 0", variant: "" });
+
+        let glzClassZero = "glz-neutral";
+        if (approxEqual(0, otStart)) {
+          glzClassZero = "glz-neutral";
+        } else if (0 > otStart) {
+          glzClassZero = "glz-up";
+        } else if (0 < otStart) {
+          glzClassZero = "glz-down";
+        }
+
+        const workTextZero = hoursToHM(workedZero) + "h Arbeit · " + hoursToHM(breakZero) + "h Pause";
+        const glzTextZero = "0,00 h GLZ";
+
+        html += createScenario(
+          titleZero,
+          endZero + " Uhr",
+          workTextZero,
+          glzTextZero,
+          glzClassZero,
+          chipsZero
+        );
+      }
+
+      resultsDiv.innerHTML = html;
+    });
+  </script>
+</body>
+</html>
